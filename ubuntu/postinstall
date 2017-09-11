@@ -1,0 +1,88 @@
+#!/bin/bash
+# Copyright 2017 Jared H. Hudson
+# Licensed under the Apache License, Version 2.0
+#
+declare -x PATH=/sbin:/usr/sbin:/usr/local/sbin:/root/bin:/usr/local/bin:/bin:/usr/bin
+declare -x newuser=freegeek
+declare -x install_server=installsrv.lan
+declare logfile=/root/postinstall.log
+
+if ! touch $logfile; then
+    printf "Unable to write to log file %s\n" "$logfile"
+    exit 1
+fi
+
+
+# usage: fetch_install /path/filename [permission] [ownership]
+fetch_install()
+{
+    local file=$(basename $1)
+    local dir=$(dirname $1)
+    local url=http://$install_server/ubuntu/$file
+    local dst_file=$1
+    local tmpfile=$(mktemp)
+
+    if [ -z "$2" ]; then
+	perm=0755
+    else
+	perm=$2
+    fi
+
+    if [ -z "$3" ]; then
+	owner=root:root
+    else
+	owner=$3
+    fi
+
+    if [ ! -d $dir ]; then
+	if ! mkdir -p $dir; then
+	    printf "Error creating directory %s.\n" "$dir"
+	    exit 1
+	fi
+
+	if ! chown $owner $dir; then
+	    printf "Error changing directory %s ownership.\n" "$dir"
+	    rm $tmpfile
+	    return 2
+	fi
+    fi
+
+    if ! wget -nv -O $tmpfile $url; then
+	printf "Error fetching %s from %s\n" "$file" "$url"
+	rm $tmpfile
+	return 3
+    fi
+
+    if ! chmod $perm $tmpfile; then
+	printf "Error making temporary file %s executable.\n" "$tmpfile"
+	rm $tmpfile
+	return 4
+    fi
+
+    if ! chown $owner $tmpfile; then
+	printf "Error changing temporary file %s ownership.\n" "$tmpfile"
+	rm $tmpfile
+	return 5
+    fi
+
+    if ! mv $tmpfile $dst_file; then
+	printf "Error moving %s to %s.\n" "$tmpfile" "$dst_file"
+	rm $tmpfile
+	return 6
+    fi
+
+    printf "%s installed successfully.\n" "$dst_file"
+}
+
+{
+    fetch_install /usr/local/bin/setupuser
+    fetch_install /usr/local/sbin/setupsystem
+    fetch_install /home/$newuser/.config/autostart/setupuser.desktop 0644 $newuser:$newuser
+    fetch_install /etc/sudoers.d/01_$newuser 0600
+
+    if ! chown -R $newuser:$newuser /home/$newuser/; then
+	printf "Error changing ownership of %s to %s.\n" "/home/$newuser/" "$newuser:$newuser"
+    fi
+
+} >> $logfile 2>&1
+

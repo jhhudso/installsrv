@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Exec=/usr/local/bin/setupuser
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name[en_US]=setupuser
+Name=setupuser
+Comment[en_US]=This program sets up a user in Ubuntu.
+Comment=

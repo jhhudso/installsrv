@@ -1,0 +1,5 @@
+#!/bin/bash
+firefox http://www.youtube.com/
+rm -f ~/.config/autostart/setupuser.desktop
+sudo /usr/local/sbin/setupsystem
+
