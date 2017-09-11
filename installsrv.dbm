@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.9.0" last-position="449,173" last-zoom="1"
+	 default-schema="public" default-owner="installsrv">
+<role name="installsrv"
+      login="true"
+      password="installsrv">
+</role>
+
+<database name="installsrv">
+	<role name="installsrv"/>
+</database>
+
+<schema name="public" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<table name="components">
+	<schema name="public"/>
+	<role name="installsrv"/>
+	<position x="1160" y="300"/>
+	<column name="id" not-null="true">
+		<type name="serial" length="0"/>
+	</column>
+	<column name="name" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="component_type">
+		<type name="integer" length="0"/>
+	</column>
+	<constraint name="components_pk" type="pk-constr" table="public.components">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="component_types">
+	<schema name="public"/>
+	<role name="installsrv"/>
+	<position x="580" y="340"/>
+	<column name="component_type" not-null="true">
+		<type name="serial" length="0"/>
+	</column>
+	<column name="name" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="component_types_pk" type="pk-constr" table="public.component_types">
+		<columns names="component_type" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="pci_class_names">
+	<schema name="public"/>
+	<role name="installsrv"/>
+	<position x="580" y="440"/>
+	<column name="pci_class" not-null="true">
+		<type name="varchar" length="4"/>
+	</column>
+	<column name="name">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="pci_classes_pk" type="pk-constr" table="public.pci_class_names">
+		<columns names="pci_class" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="pci_vendor_names">
+	<schema name="public"/>
+	<role name="installsrv"/>
+	<position x="580" y="560"/>
+	<column name="pci_vendor" not-null="true">
+		<type name="varchar" length="4"/>
+	</column>
+	<column name="name">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="pci_vendors_pk" type="pk-constr" table="public.pci_vendor_names">
+		<columns names="pci_vendor" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="pci_device_names">
+	<schema name="public"/>
+	<role name="installsrv"/>
+	<position x="580" y="660"/>
+	<column name="pci_device" not-null="true">
+		<type name="varchar" length="4"/>
+	</column>
+	<column name="name">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="pci_devices_pk" type="pk-constr" table="public.pci_device_names">
+		<columns names="pci_device" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="pci_subsystem_names">
+	<schema name="public"/>
+	<role name="installsrv"/>
+	<position x="520" y="760"/>
+	<column name="pci_subvendor" not-null="true">
+		<type name="varchar" length="4"/>
+	</column>
+	<column name="pci_subdevice" not-null="true">
+		<type name="varchar" length="4"/>
+	</column>
+	<column name="name">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="pci_subsystem_names_pk" type="pk-constr" table="public.pci_subsystem_names">
+		<columns names="pci_subvendor,pci_subdevice" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<constraint name="component_type" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="RESTRICT" del-action="RESTRICT" ref-table="public.component_types" table="public.components">
+	<columns names="component_type" ref-type="src-columns"/>
+	<columns names="component_type" ref-type="dst-columns"/>
+</constraint>
+
+<relationship name="rel_components_component_types" type="relfk"
+	 src-table="public.components"
+	 dst-table="public.component_types"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="0" y="0"/>
+	</label>
+</relationship>
+
+</dbmodel>
