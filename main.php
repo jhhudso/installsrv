@@ -164,26 +164,37 @@ function additem(printbarcode) {
 	}
 
 	var xhttp = new XMLHttpRequest();
-	xhttp.onreadystatechange = function() {
-	    if (this.readyState == 4 && this.status == 200) {
-	     	if (this.responseText) {
-		     	if (this.response === 'true') {
-		     		addresults.innerHTML = '';
-	     			addresults.className = 'nonerror';
-					addresults.innerHTML = 'Item added!';
-					document.getElementById("addform").reset();
-		     	} else {
-			     	var error = JSON.parse(this.response);
-			     	addresults.innerHTML = '';
-			     	addresults.className = 'error';
-			     	addresults.innerHTML = error["error"];			     	
-		     	}
-	    	}
-	    }
-	  };
-	  
-	  xhttp.open("GET", "additem.php?name="+namebox.value+"&reference="+referencebox.value+"&code="+codebox.value+"&pricesell="+pricesellbox.value+"&category="+categoryselect.value, true);
-	  xhttp.send();	
+	xhttp.onreadystatechange = (function(x,name,code,pricesell,printbarcode) {		
+    	return function() {
+    	    if (x.readyState == 4 && x.status == 200) {
+    	     	if (x.responseText) {
+    		     	if (x.response === 'true') {
+        		     	var addresults = document.getElementById("addresults");
+    		     		addresults.innerHTML = '';
+    	     			addresults.className = 'nonerror';
+    					addresults.innerHTML = 'Item added!';
+    					document.getElementById("addform").reset();
+    					
+      					// print barcode
+      					if (printbarcode) {
+        					var barcodexhttp = new XMLHttpRequest();
+        					barcodexhttp.open("GET", "barcode.php?item_name="+name+"&item_code="+code+"&item_pricesell="+pricesell+"&print=1", true);
+        					barcodexhttp.send();
+      					}	
+    		     	} else {           		     	
+    			     	var error = JSON.parse(x.response);
+    			     	var addresults = document.getElementById("addresults");
+    			     	addresults.innerHTML = '';
+    			     	addresults.className = 'error';
+    			     	addresults.innerHTML = error["error"];        			     				     	
+    		     	}
+    	    	}
+    	    }
+    	}
+	})(xhttp,namebox.value,codebox.value,pricesellbox.value,printbarcode)
+		  
+	xhttp.open("GET", "additem.php?name="+namebox.value+"&reference="+referencebox.value+"&code="+codebox.value+"&pricesell="+pricesellbox.value+"&category="+categoryselect.value, true);	  
+	xhttp.send();	
 }
 function showadditem() {
 	var searchdiv = document.getElementById("search");
@@ -252,7 +263,7 @@ function ReferencetoBarcode() {
     <form id=addform method="post" enctype="application/x-www-form-urlencoded" action="main.php?tool=additem">
         Name:      <input type="text" size="25" id="namebox"        name="name"      placeholder="Full name of item"          autocomplete="off" required value="<?php echo $item_name; ?>"      /><?php showError($item_name_error); ?>
         Reference: <input type="text" size="25" id="referencebox"   name="reference" placeholder="Model or reference keyword" autocomplete="off" required value="<?php echo $item_reference; ?>" /><?php showError($item_reference_error); ?>
-    	<div>Barcode:   <input type="text" size="25" id="codebox"        name="code"      placeholder="Barcode"                    autocomplete="off" required value="<?php echo $item_code; ?>"      /><button onclick="ReferencetoBarcode(); return false;" class="btn btn-primary">Use Reference as Barcode</button><?php showError($item_code_error); ?></div>
+   <div>Barcode:   <input type="text" maxlength="12" id="codebox"   name="code"      placeholder="Barcode"                    autocomplete="off" required value="<?php echo $item_code; ?>"      /><button onclick="ReferencetoBarcode(); return false;" class="btn btn-primary">Use Reference as Barcode</button><?php showError($item_code_error); ?></div>
     	Price:     <input type="text" size="25" id="pricesellbox"   name="pricesell" placeholder="Sell price"                 autocomplete="off" required value="<?php echo $item_pricesell; ?>" /><?php showError($item_pricesell_error); ?>
     	Category:  <select                      id="categoryselect" name="category"></select>
     	<div align="right" style="float: right;"><button id=addbutton onclick="additem(false); return false;" type="submit" name="submit" value="add" class="btn btn-primary btn-large">Add item</button>
