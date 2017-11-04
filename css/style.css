@@ -37,8 +37,10 @@
 	color: black;
 	float: left;
 	padding: 10px;
-	visibility: hidden;
+	display: none;
+	position: relative;
 }
+
 .error {
     color: red;
     text-shadow: 0 0 10px rgba(0,0,0,0.3);

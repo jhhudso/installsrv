@@ -44,12 +44,12 @@
     $angle    = 0;   // rotation in degrees : nb : non horizontable barcode might not be usable because of pixelisation
     
     $code     = $item_code; // barcode, of course ;)
-    $type     = 'code128';
+    $type     = 'upc';
     
     
     // -------------------------------------------------- //
-    //            ALLOCATE GD RESSOURCE
-    // -------------------------------------------------- //
+    //            ALLOCATE GD RESSOURCE 
+   // -------------------------------------------------- //
     $im     = imagecreatetruecolor(360, 100);
     $black  = ImageColorAllocate($im,0x00,0x00,0x00);
     $white  = ImageColorAllocate($im,0xff,0xff,0xff);
@@ -87,7 +87,7 @@
     
     if ($print == 1) {
         $ret = imagepng($im, 'tmp/'.$item_code.'.png');
-        exec('lp -d QL-570 tmp/'.$code.'.png');
+        exec('lp -d remote-QL-570 tmp/'.$code.'.png');
     }
     exec('rm tmp/'.$item_code.'.png');
     imagedestroy($im);
