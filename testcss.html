@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<style>
+section {
+	width: 500px;
+	background: lightgray;
+    color: black;
+    border-radius: 1em;
+    padding: 1em;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+}
+.searchinput {
+	position: relative;
+	left: 100px;
+}
+.searchbuttons {
+	position: relative;
+	text-align: right;
+}
+#searchresultsid {
+	display: none;
+}
+</style>
+<script>
+function showresults() {
+	var id = document.getElementById('searchresultsid');
+	console.log(id.style.display);
+	if (id.style.display == 'inline') {
+		id.style.display='none';
+	} else {
+		id.style.display='inline';
+	}
+}
+
+</script>
+</head>
+<body>
+<section>
+<form>
+<div class="searchinput">Search: <input type="text"></div>
+<div id="searchresultsid" class="searchresults">
+<ul>
+<li>Result 1</li>
+<li>Result 2</li>
+<li>Result 3</li>
+</ul>
+</div>
+<div class="searchbuttons"><button type="submit" onclick="showresults(); return false;">Submit</button></div>
+</form>
+</section>
+</body>
+</html>
