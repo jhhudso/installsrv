@@ -1,0 +1,10 @@
+%syntax-version=1.0.0
+%project=meatPacker
+
+size_units 2018-01-14T05:28:00Z Zac Slade,,, <krakrjak@zombiebits> # Add unit type enum for byte sizes
+transfer_units 2018-01-14T05:32:13Z Zac Slade,,, <krakrjak@zombiebits> # Add Hz units to schema
+cycle_units 2018-01-14T06:47:57Z Zac Slade,,, <krakrjak@zombiebits> # Add cycle units
+computers 2018-01-14T04:43:29Z Zac Slade,,, <krakrjak@zombiebits> # Add initial table template
+drives [computers size_units] 2018-01-14T04:44:15Z Zac Slade,,, <krakrjak@zombiebits> # Add disk drive table
+memory [computers size_units transfer_units] 2018-01-14T04:44:54Z Zac Slade,,, <krakrjak@zombiebits> # Add memory stick table
+cpus [computers cycle_units] 2018-01-14T04:45:21Z Zac Slade,,, <krakrjak@zombiebits> # Add cpu tracking table
