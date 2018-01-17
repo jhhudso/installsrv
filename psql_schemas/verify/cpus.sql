@@ -2,8 +2,8 @@
 
 BEGIN;
 
-select computer_id, model, core_count, threads_per_core, speed, speed_unit
-  from cpus
- where FALSE;
+SELECT computer_id, model, cores, threads_per_core, speed, speed_unit
+  FROM cpus
+ WHERE FALSE;
 
 ROLLBACK;

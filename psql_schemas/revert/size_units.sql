@@ -2,6 +2,6 @@
 
 BEGIN;
 
-drop type size_units;
+DROP TYPE size_units;
 
 COMMIT;

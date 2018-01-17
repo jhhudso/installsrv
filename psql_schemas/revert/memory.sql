@@ -2,8 +2,8 @@
 
 BEGIN;
 
-drop table memory;
+DROP TABLE memory;
 
-drop type memory_types;
+DROP TYPE memory_types;
 
 COMMIT;

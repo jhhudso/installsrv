@@ -2,6 +2,6 @@
 
 BEGIN;
 
-drop type transfer_units;
+DROP TYPE transfer_units;
 
 COMMIT;

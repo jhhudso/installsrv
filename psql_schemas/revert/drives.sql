@@ -2,8 +2,8 @@
 
 BEGIN;
 
-drop table drives;
+DROP TABLE drives;
 
-drop type drive_types;
+DROP TYPE drive_types;
 
 COMMIT;

@@ -2,8 +2,8 @@
 
 BEGIN;
 
-select computer_id, os, motherboard_model, motherboard_sn, barcode
-  from computers
- where FALSE;
+SELECT computer_id, os, motherboard_model, motherboard_sn, barcode
+  FROM computers
+ WHERE FALSE;
 
 ROLLBACK;

@@ -2,6 +2,6 @@
 
 BEGIN;
 
-drop table computers;
+DROP TABLE computers;
 
 COMMIT;

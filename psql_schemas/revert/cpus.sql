@@ -2,6 +2,6 @@
 
 BEGIN;
 
-drop table cpus;
+DROP TABLE cpus;
 
 COMMIT;

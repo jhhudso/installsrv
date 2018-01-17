@@ -5,21 +5,21 @@
 
 BEGIN;
 
-create type memory_types as enum (
-      'DDR'
-    , 'DDR2'
-    , 'DDR3'
-    , 'DDR4'
+CREATE TYPE memory_types AS enum (
+    'DDR',
+    'DDR2',
+    'DDR3',
+    'DDR4'
 );
 
-create table memory (
-      computer_id bigint references computers
-    , model text null
-    , mem_speed bigint not null
-    , speed_unit transfer_units not null
-    , mem_size bigint not null
-    , size_unit size_units not null
-    , mem_type memory_types not null
+CREATE TABLE memory (
+    computer_id bigint REFERENCES computers,
+    model text NULL,
+    speed bigint NOT NULL,
+    speed_unit transfer_units NOT NULL,
+    size bigint NOT NULL,
+    size_unit size_units NOT NULL,
+    type memory_types NOT NULL
 );
 
 COMMIT;

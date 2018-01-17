@@ -2,6 +2,6 @@
 
 BEGIN;
 
-drop type cycle_units;
+DROP TYPE cycle_units;
 
 COMMIT;

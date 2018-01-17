@@ -4,20 +4,20 @@
 
 BEGIN;
 
-create type drive_types as enum (
-      'HDD'
-    , 'SSD'
-    , 'NVME'
+CREATE TYPE drive_types AS enum (
+    'HDD',
+    'SSD',
+    'NVME'
 );
 
-create table drives (
-      computer_id bigint references computers
-    , model text not null
-    , drive_size text not null
-    , size_unit size_units not null
-    , rpm int null
-    , drive_type drive_types not null
-    , sn text not null
+CREATE TABLE drives (
+    computer_id bigint REFERENCES computers,
+    model text NOT NULL,
+    size text NOT NULL,
+    size_unit size_units NOT NULL,
+    type drive_types NOT NULL,
+    sn text NOT NULL,
+    rpm int NULL
 );
 
 COMMIT;
