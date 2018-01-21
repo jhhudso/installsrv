@@ -22,4 +22,10 @@ CREATE TABLE memory (
     type memory_types NOT NULL
 );
 
+-- Read-Only user can select
+GRANT SELECT ON memory TO inventory_ro;
+
+-- Read-Write user can insert/update/delete
+GRANT SELECT,INSERT,UPDATE,DELETE ON memory TO inventory_rw;
+
 COMMIT;
