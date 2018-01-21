@@ -5,6 +5,7 @@
 BEGIN;
 
 CREATE TYPE drive_types AS enum (
+    'Unknown',
     'HDD',
     'SSD',
     'NVME'
@@ -13,11 +14,17 @@ CREATE TYPE drive_types AS enum (
 CREATE TABLE drives (
     computer_id bigint REFERENCES computers,
     model text NOT NULL,
-    size text NOT NULL,
+    size bigint NOT NULL,
     size_unit size_units NOT NULL,
     type drive_types NOT NULL,
-    sn text NOT NULL,
+    sn text NULL,
     rpm int NULL
 );
+
+-- Read-Only user can select
+GRANT SELECT ON drives TO inventory_ro;
+
+-- Read-Write user can insert/update/delete
+GRANT SELECT,INSERT,UPDATE,DELETE ON drives TO inventory_rw;
 
 COMMIT;

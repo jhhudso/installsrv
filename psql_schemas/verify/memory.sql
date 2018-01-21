@@ -67,4 +67,13 @@ FROM
 WHERE
     FALSE;
 
+-- Read-Only user can only select from this table
+SELECT has_table_privilege('inventory_ro', 'memory', 'select');
+SELECT NOT has_table_privilege('inventory_ro', 'memory', 'insert');
+SELECT NOT has_table_privilege('inventory_ro', 'memory', 'update');
+SELECT NOT has_table_privilege('inventory_ro', 'memory', 'delete');
+
+-- Read-Write user can do many things
+SELECT has_table_privilege('inventory_rw', 'memory', 'select, insert, update, delete');
+
 ROLLBACK;
