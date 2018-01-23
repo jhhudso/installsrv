@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright 2018 Jared H. Hudson <jhhudso@volumehost.com>
+# Licensed under GPL v2 or later
 
 parse_options() {
 	TEMP=$(getopt -o 'd' -n "$0" -- "$@")
@@ -30,31 +32,131 @@ parse_options() {
 
 setup_logging() {
 	if [ "$DEBUG" = "1" ]; then
-		log=/proc/self/fd/1
+		logfile=/proc/self/fd/1
 	else
 		local logdir=/var/log
 		test ! -d "$logdir" && logdir=/tmp
 		test ! -d "$logdir" && logdir=/
-		log="${logdir}/inventory.log"
+		logfile="${logdir}/inventory.log"
 		
-		if ! touch "$log" 2>/dev/null; then
-			printf "Unable to touch '%s'\n" "$log"
+		if ! touch "$logfile" 2>/dev/null; then
+			printf "Unable to touch '%s'\n" "$logfile"
 			exit 1
 		fi
 	fi
 }
 
-get_db_schema() {
-	#curl -i $postgrest_url/computers -X GET -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json"
-	curl -i $postgrest_url/computers?limit=0 -X GET -H "Content-Type: application/json"
+log() {
+	printf "%s %s\n" "$(date -Iseconds)" "$1"
+}
+
+post() {
+	if [ -z "$1" -o -z "$2" ]; then		
+		echo 'Error in post function. Use post <table> <json to post>' >&2
+		return 1
+	else
+		local table=$1
+		local -A json=$2
+	fi
+	
+	log "Posting to $postgrest_url/$table with $json" >&2
+	response=$(curl -i $postgrest_url/$table -X POST \
+	        	    -H "Authorization: Bearer $postgrest_token" \
+	     			-H 'Content-Type: application/json' \
+	     			-d "$json" 2>/dev/null)
+	response=${response//$'\r'/}
+	log "Response:" >&2
+	echo "$response" >&1
+	echo "$response" >&2
+}
+
+array_to_json() {
+	local -i i=0
+	printf '{'
+	for idx in ${!json[*]}; do
+		if [ $((i++)) -gt 0 ]; then
+			printf ", "
+		fi
+		printf '"%s":"%s"' "$idx" "${json[$idx]}"
+	done
+	printf '}\n'
+}
+
+post_computer() {
+	declare -A json=()
+	json[motherboard_model]=$(dmidecode -s baseboard-product-name)
+	json[motherboard_sn]=$(dmidecode -s baseboard-serial-number)
+	
+	if which lsb_release &>/dev/null; then
+		json[os]=$(lsb_release -a | awk -F ":" '/Description:/{sub(/^[ \t]+/, "",$2);print $2}')
+	elif -f /etc/os-release; then
+		eval $(cat /etc/os-release)
+		json[os]=$PRETTY_NAME
+	fi
+		
+	
+	declare -i computer_id=0
+	computer_id=$(post computers "$(array_to_json)"|awk -F. '/Location: \/computers\?computer_id=eq\./{print $NF;exit}')
+	log "Computer ID: $computer_id added" >&2
+	echo $computer_id
+}
+
+post_cpu() {
+	local -i computer_id=$1
+	
+	for cpu in $(grep physical\ id /proc/cpuinfo|sort|uniq|awk '{print $NF}'); do
+		declare -A json=()
+		json[computer_id]=$computer_id
+	 	json[model]=$(awk -F:\  -vpackage=$cpu '/physical id/{physical_id=$NF} /core id/{core_id=$NF} /model name/{model=$2}/^$/{if (core_id==0 && physical_id==package){print model;exit}}' < /proc/cpuinfo)
+		json[cores]=$(awk -F:\  -vpackage=$cpu '/physical id/{physical_id=$NF} /core id/{core_id=$NF} /cpu cores/{cores=$2}/^$/{if (core_id==0 && physical_id==package){print cores;exit}}' < /proc/cpuinfo)
+		json[threads_per_core]=$(awk -F:\  -vpackage=$cpu '/physical id/{physical_id=$NF} /core id/{core_id=$NF} /siblings/{siblings=$NF} /cpu cores/{cores=$2}/^$/{if (core_id==0 && physical_id==package){print siblings/cores;exit}}' < /proc/cpuinfo)
+		json[speed]=$(dmidecode -s processor-frequency|awk -vpackage=$cpu '{if (NR==package+1){print $1;exit}}')
+		json[speed_unit]=$(dmidecode -s processor-frequency|awk -vpackage=$cpu '{if (NR==package+1){print $2;exit}}')
+	
+		post cpus "$(array_to_json)" >/dev/null
+	done
+}
+
+post_drive() {
+	local -i computer_id=$1
+	
+	for disk in $(lsblk -Pibo KNAME,SIZE,MODEL,TYPE|grep -E 'disk|rom'); do
+		eval $disk
+		declare -A json=()		
+		json[computer_id]=$computer_id
+		json[model]=$MODEL
+		json[size]=$SIZE
+		json[size_unit]=B
+		json[type]=$TYPE
+		#json[sn]=
+		#json[rpm]=$()
+	
+		post drives "$(array_to_json)"
+	done
+}
+
+post_memory() {
+	local -i computer_id=$1
+	declare -A json=()
+	json[model]=$()
+	json[cores]=$()
+	json[threads_per_core]=$()
+	json[spped]=$()
+	json[speed_unit]=$()
+	
+	post memory "$(array_to_json)"
 }
 
 parse_options "$@"
 
-declare log
+umask 027
+
+declare logfile=
 setup_logging
 
 {
+	log "Starting $0"
+	
 	# search for config file first in local directory then alongside script	
 	if [ -f inventory.conf.sh ]; then
 		. inventory.conf.sh
@@ -62,11 +164,24 @@ setup_logging
 		. $(dirname $0)/inventory.conf.sh
 	fi
 	
+	if [ "$(id -u)" != "0" ]; then
+		printf "Must be root to run.\n\n"
+		exit 1
+	fi
+	
 	# set default server in case config file does not define it		
     postgrest_url=${postgrest_url:-http://installsrv.at.freegeekarkansas.org:3000}
-	get_db_schema 
-
-
-} >$log 2>&1
+	
+	declare -i computer_id=0
+	computer_id=$(post_computer)
+	if [ $computer_id -gt 0 ]; then
+		post_cpu $computer_id
+		#post_drive $computer_id
+		#post_memory $computer_id
+	else
+		log "Error adding computer"
+		exit 1
+	fi
+} >>$logfile 2>&1
 
 
