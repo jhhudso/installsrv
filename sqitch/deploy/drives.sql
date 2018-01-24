@@ -12,6 +12,7 @@ CREATE TYPE drive_types AS enum (
 );
 
 CREATE TABLE drives (
+    drive_id serial,
     computer_id bigint REFERENCES computers,
     model text NOT NULL,
     size bigint NOT NULL,
@@ -23,8 +24,10 @@ CREATE TABLE drives (
 
 -- Read-Only user can select
 GRANT SELECT ON drives TO inventory_ro;
+GRANT SELECT ON SEQUENCE drives_drive_id_seq TO inventory_ro;
 
 -- Read-Write user can insert/update/delete
 GRANT SELECT,INSERT,UPDATE,DELETE ON drives TO inventory_rw;
+GRANT USAGE ON SEQUENCE drives_drive_id_seq TO inventory_rw;
 
 COMMIT;

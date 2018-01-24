@@ -32,18 +32,20 @@ SELECT 'NVME' :: drive_types > 'SSD' :: drive_types;
 SELECT 'NVME' :: drive_types = 'NVME' :: drive_types;
 
 --Check that the required columns are a part of the table
-SELECT computer_id, model, size, size_unit, type, sn
+SELECT drive_id, computer_id, model, size, size_unit, type, sn
   FROM drives
  WHERE FALSE;
 
 -- Read-Only user can only select from this table
 SELECT has_table_privilege('inventory_ro', 'drives', 'select');
+SELECT has_sequence_privilege('inventory_ro', 'drives_drive_id_seq', 'select');
 SELECT NOT has_table_privilege('inventory_ro', 'drives', 'insert');
 SELECT NOT has_table_privilege('inventory_ro', 'drives', 'update');
 SELECT NOT has_table_privilege('inventory_ro', 'drives', 'delete');
 
 -- Read-Write user can do many things
 SELECT has_table_privilege('inventory_rw', 'drives', 'select, insert, update, delete');
-
+SELECT has_sequence_privilege('inventory_rw', 'drives_drive_id_seq', 'usage');
+SELECT NOT has_sequence_privilege('inventory_rw', 'drives_drive_id_seq', 'update');
 
 ROLLBACK;
