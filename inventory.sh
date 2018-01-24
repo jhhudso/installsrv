@@ -144,10 +144,15 @@ post_drive() {
 		declare -A json=()
 
 		json[computer_id]=$computer_id
-		json[sn]=$SERIAL
-		json[size]=$SIZE
-		json[size_unit]=B
-		json[model]=$MODEL
+		json[type]="Unknown"
+		if [[ -n $SERIAL ]]; then json[sn]=$SERIAL; fi
+		if [[ -n $MODEL ]]; then json[model]=$MODEL; fi
+		if [[ -n $SIZE ]]; then
+			json[size]=$SIZE
+			json[size_unit]=B;
+		else
+			log "failure to get disk size"
+		fi
 
 		if [[ $ROTA -eq 1 ]]; then
 			json[type]="HDD"
