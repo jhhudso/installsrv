@@ -177,19 +177,38 @@ post_drive() {
 post_memory() {
 	local -i computer_id=$1
 	
-	for memory_handle in $(dmidecode --type 17|awk -F, '/Handle 0x/{match($1,/Handle (0x[0-9A-Z]*)/,a);print a[1]}'); do
+	for handle in $(dmidecode --type 17|awk -F, '/Handle 0x/{match($1,/Handle (0x[0-9A-Z]*)/,a);print a[1]}'); do
 		declare -A json=()
 		
 		json[computer_id]=$computer_id
-		json[model]=$()
-		json[speed]=$()
-		json[speed_unit]=$()
-		json[size]=$()
-		json[size_unit]=$()
-		json[type]=$()
+		json[model]=$(awk -F': ' -vtarget=$handle -f - <(dmidecode --type 17) <<'END'
+/Handle 0x[0-9A-F]*/ {match($0,/Handle (0x[0-9A-F]*)/,a); handle=a[1]}
+/Part Number/        {model=$2}
+/^$/                 {if (handle==target){print model; exit}}
+END
+)
+		json[speed]=$(awk -F': ' -vtarget=$handle -f - <(dmidecode --type 17) <<'END'
+/Handle 0x[0-9A-F]*/ {match($0,/Handle (0x[0-9A-F]*)/,a); handle=a[1]}
+/Speed/              {match($0,/Speed: ([0-9]*) /,a); speed=a[1]}
+/^$/                 {if (handle==target){print speed; exit}}
+END
+)
+		if [ -z "${json[speed]}" ]; then
+			json[speed]=0
+		fi
+		
+		json[speed_unit]=$(awk -F': ' -vtarget=$handle -f - <(dmidecode --type 17) <<'END'
+/Handle 0x[0-9A-F]*/ {match($0,/Handle (0x[0-9A-F]*)/,a); handle=a[1]}
+/Speed/              {match($0,/Speed: ([0-9]*) ([a-zA-Z]*)/,a); speed=a[2]}
+/^$/                 {if (handle==target){print speed; exit}}
+END
+)
+		unset json[speed_unit] #until we work out MHz vs MT/s
+		#json[size]=$()
+		#json[size_unit]=$()
+		#json[type]=$()
 	
-		#post memory "$(array_to_json)"
-		echo $memory_handle
+		post memory "$(array_to_json)" >/dev/null
 	done
 }
 
@@ -223,7 +242,7 @@ setup_logging
 	if [ $computer_id -gt 0 ]; then
 		post_cpu $computer_id
 		post_drive $computer_id
-		post_memory $computer_id
+		#post_memory $computer_id
 	else
 		log "Error adding computer"
 		exit 1
