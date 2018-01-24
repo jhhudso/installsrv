@@ -104,12 +104,31 @@ post_computer() {
 post_cpu() {
 	local -i computer_id=$1
 	
-	for cpu in $(grep physical\ id /proc/cpuinfo|sort|uniq|awk '{print $NF}'); do
+	for cpu in $(grep 'physical id' /proc/cpuinfo|sort|uniq|awk '{print $NF}'); do
 		declare -A json=()
 		json[computer_id]=$computer_id
-	 	json[model]=$(awk -F:\  -vpackage=$cpu '/physical id/{physical_id=$NF} /core id/{core_id=$NF} /model name/{model=$2}/^$/{if (core_id==0 && physical_id==package){print model;exit}}' < /proc/cpuinfo)
-		json[cores]=$(awk -F:\  -vpackage=$cpu '/physical id/{physical_id=$NF} /core id/{core_id=$NF} /cpu cores/{cores=$2}/^$/{if (core_id==0 && physical_id==package){print cores;exit}}' < /proc/cpuinfo)
-		json[threads_per_core]=$(awk -F:\  -vpackage=$cpu '/physical id/{physical_id=$NF} /core id/{core_id=$NF} /siblings/{siblings=$NF} /cpu cores/{cores=$2}/^$/{if (core_id==0 && physical_id==package){print siblings/cores;exit}}' < /proc/cpuinfo)
+	 	json[model]=$(awk -F': ' -vpackage=$cpu -f - /proc/cpuinfo <<'END'
+/physical id/ {physical_id=$NF}
+/core id/     {core_id=$NF}
+/model name/  {model=$2}
+/^$/          {if (core_id==0 && physical_id==package){print model; exit}}
+END
+)
+		json[cores]=$(awk -F': ' -vpackage=$cpu -f - /proc/cpuinfo <<'END'
+/physical id/ {physical_id=$NF}
+/core id/     {core_id=$NF}
+/cpu cores/   {cores=$2}
+/^$/          {if (core_id==0 && physical_id==package){print cores;exit}}
+END
+)
+		json[threads_per_core]=$(awk -F': ' -vpackage=$cpu -f - /proc/cpuinfo <<'END'
+/physical id/{physical_id=$NF}
+/core id/    {core_id=$NF}
+/siblings/   {siblings=$NF}
+/cpu cores/  {cores=$2}
+/^$/         {if (core_id==0 && physical_id==package){print siblings/cores;exit}}
+END
+)
 		json[speed]=$(dmidecode -s processor-frequency|awk -vpackage=$cpu '{if (NR==package+1){print $1;exit}}')
 		json[speed_unit]=$(dmidecode -s processor-frequency|awk -vpackage=$cpu '{if (NR==package+1){print $2;exit}}')
 	
