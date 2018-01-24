@@ -139,13 +139,14 @@ END
 post_drive() {
 	local -i computer_id=$1
 
-	for disk in "$(lsblk -Pdibo KNAME,SIZE,ROTA,SERIAL,TRAN,MODEL)"; do
+	IFS=$'\n'
+	for disk in $(lsblk -Pdibo KNAME,SIZE,ROTA,SERIAL,TRAN,MODEL); do
+		unset KNAME SIZE ROTA SERIAL TRAN MODEL
 		eval $disk
 		declare -A json=()
 
 		json[computer_id]=$computer_id
 		json[type]="Unknown"
-		if [[ -n $SERIAL ]]; then json[sn]=$SERIAL; fi
 		if [[ -n $MODEL ]]; then json[model]=$MODEL; fi
 		if [[ -n $SIZE ]]; then
 			json[size]=$SIZE
@@ -154,6 +155,12 @@ post_drive() {
 			log "failure to get disk size"
 		fi
 
+		if [ -z "$SERIAL" ]; then
+			SERIAL=$(hdparm -i /dev/$KNAME|awk '/SerialNo=/{match($0,/SerialNo=(.*)/,a);print a[1]}')
+		fi
+		if [ ! -z "$SERIAL" ]; then
+			json[sn]=$SERIAL
+		fi
 		if [[ $ROTA -eq 1 ]]; then
 			json[type]="HDD"
 		else
@@ -166,20 +173,27 @@ post_drive() {
 
 		#json[rpm]=$()
 	
-		post drives "$(array_to_json)"
+		post drives "$(array_to_json)" >/dev/null
 	done
 }
 
 post_memory() {
 	local -i computer_id=$1
-	declare -A json=()
-	json[model]=$()
-	json[cores]=$()
-	json[threads_per_core]=$()
-	json[spped]=$()
-	json[speed_unit]=$()
 	
-	post memory "$(array_to_json)"
+	for memory_handle in $(dmidecode --type 17|awk -F, '/Handle 0x/{match($1,/Handle (0x[0-9A-Z]*)/,a);print a[1]}'); do
+		declare -A json=()
+		
+		json[computer_id]=$computer_id
+		json[model]=$()
+		json[speed]=$()
+		json[speed_unit]=$()
+		json[size]=$()
+		json[size_unit]=$()
+		json[type]=$()
+	
+		#post memory "$(array_to_json)"
+		echo $memory_handle
+	done
 }
 
 parse_options "$@"
@@ -212,7 +226,7 @@ setup_logging
 	if [ $computer_id -gt 0 ]; then
 		post_cpu $computer_id
 		post_drive $computer_id
-		#post_memory $computer_id
+		post_memory $computer_id
 	else
 		log "Error adding computer"
 		exit 1
