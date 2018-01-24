@@ -138,16 +138,27 @@ END
 
 post_drive() {
 	local -i computer_id=$1
-	
-	for disk in $(lsblk -Pibo KNAME,SIZE,MODEL,TYPE|grep -E 'disk|rom'); do
+
+	for disk in "$(lsblk -Pdibo KNAME,SIZE,ROTA,SERIAL,TRAN,MODEL)"; do
 		eval $disk
-		declare -A json=()		
+		declare -A json=()
+
 		json[computer_id]=$computer_id
-		json[model]=$MODEL
+		json[sn]=$SERIAL
 		json[size]=$SIZE
 		json[size_unit]=B
-		json[type]=$TYPE
-		#json[sn]=
+		json[model]=$MODEL
+
+		if [[ $ROTA -eq 1 ]]; then
+			json[type]="HDD"
+		else
+			if [[ $TRAN == 'sata' ]]; then
+				json[type]="SSD"
+			else
+				json[type]="Unknown"
+			fi
+		fi
+
 		#json[rpm]=$()
 	
 		post drives "$(array_to_json)"
@@ -195,7 +206,7 @@ setup_logging
 	computer_id=$(post_computer)
 	if [ $computer_id -gt 0 ]; then
 		post_cpu $computer_id
-		#post_drive $computer_id
+		post_drive $computer_id
 		#post_memory $computer_id
 	else
 		log "Error adding computer"
