@@ -5,8 +5,8 @@
 BEGIN;
 
 CREATE TABLE cpus (
-    cpu_id serial,
-    computer_id bigint REFERENCES computers,
+    cpu_id bigserial PRIMARY KEY,
+    computer_id bigint NOT NULL REFERENCES computers,
     model text NOT NULL,
     cores int NOT NULL,
     threads_per_core int NOT NULL,
