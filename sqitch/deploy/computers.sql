@@ -4,8 +4,15 @@ BEGIN;
 
 CREATE TABLE computers (    
     computer_id bigserial PRIMARY KEY,
-    motherboard_model text NOT NULL,    
-    motherboard_sn text NULL,
+    baseboard_model text NOT NULL,    
+    baseboard_sn text NULL,
+    baseboard_product_name text NULL,
+    baseboard_manufacturer text NULL,
+    chassis_manufacturer text NULL,
+    chassis_type text NULL,
+    chassis_version text NULL,
+    chassis_sn text NULL,
+    chassis_asset_tag text NULL,
     os text NULL,
     barcode bigint UNIQUE
 );

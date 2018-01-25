@@ -2,7 +2,9 @@
 
 BEGIN;
 
-SELECT computer_id, os, motherboard_model, motherboard_sn, barcode
+SELECT computer_id, baseboard_model, baseboard_sn, baseboard_product_name, baseboard_manufacturer,
+       chassis_manufacturer, chassis_type, chassis_version, chassis_sn, chassis_asset_tag,
+       os, barcode
   FROM computers
  WHERE FALSE;
 

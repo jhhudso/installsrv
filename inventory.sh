@@ -146,18 +146,21 @@ post_drive() {
 		declare -A json=()
 
 		json[computer_id]=$computer_id
+		json[type]="Unknown"
+		if [[ -n $MODEL ]]; then json[model]=$MODEL; fi
+		if [[ -n $SIZE ]]; then
+			json[size]=$SIZE
+			json[size_unit]=B;
+		else
+			log "failure to get disk size"
+		fi
+
 		if [ -z "$SERIAL" ]; then
 			SERIAL=$(hdparm -i /dev/$KNAME|awk '/SerialNo=/{match($0,/SerialNo=(.*)/,a);print a[1]}')
 		fi
-					
 		if [ ! -z "$SERIAL" ]; then
 			json[sn]=$SERIAL
 		fi
-		
-		json[size]=$SIZE
-		json[size_unit]=B
-		json[model]=$MODEL
-
 		if [[ $ROTA -eq 1 ]]; then
 			json[type]="HDD"
 		else

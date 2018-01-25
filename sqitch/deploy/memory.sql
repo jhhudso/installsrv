@@ -13,6 +13,7 @@ CREATE TYPE memory_types AS enum (
 );
 
 CREATE TABLE memory (
+    memory_id serial,
     computer_id bigint REFERENCES computers,
     model text NULL,
     speed bigint NOT NULL,
@@ -24,8 +25,10 @@ CREATE TABLE memory (
 
 -- Read-Only user can select
 GRANT SELECT ON memory TO inventory_ro;
+GRANT SELECT ON memory_memory_id_seq TO inventory_ro;
 
 -- Read-Write user can insert/update/delete
 GRANT SELECT,INSERT,UPDATE,DELETE ON memory TO inventory_rw;
+GRANT USAGE ON memory_memory_id_seq TO inventory_rw;
 
 COMMIT;
