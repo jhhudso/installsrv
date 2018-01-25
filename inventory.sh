@@ -1,6 +1,9 @@
 #!/bin/bash
 # Copyright 2018 Jared H. Hudson <jhhudso@volumehost.com>
+# Copyright 2018 Zac Slade
 # Licensed under GPL v2 or later
+# Some commands based on Josh Nobert's syscript
+#
 
 parse_options() {
 	TEMP=$(getopt -o 'd' -n "$0" -- "$@")
@@ -47,27 +50,26 @@ setup_logging() {
 }
 
 log() {
-	printf "%s %s\n" "$(date -Iseconds)" "$1"
+	printf "%s %s\n" "$(date -Iseconds)" "$1" >&2
 }
 
 post() {
 	if [ -z "$1" -o -z "$2" ]; then		
-		echo 'Error in post function. Use post <table> <json to post>' >&2
+		log 'Error in post function. Use post <table> <json to post>'
 		return 1
 	else
 		local table=$1
 		local -A json=$2
 	fi
 	
-	log "Posting to $postgrest_url/$table with $json" >&2
+	log "Posting to $postgrest_url/$table with $json"
 	response=$(curl -i $postgrest_url/$table -X POST \
 	        	    -H "Authorization: Bearer $postgrest_token" \
 	     			-H 'Content-Type: application/json' \
 	     			-d "$json" 2>/dev/null)
 	response=${response//$'\r'/}
-	log "Response:" >&2
-	echo "$response" >&1
-	echo "$response" >&2
+	log "Response:"
+	echo "$response" >&1 >&2
 }
 
 array_to_json() {
@@ -84,8 +86,22 @@ array_to_json() {
 
 post_computer() {
 	declare -A json=()
-	json[motherboard_model]=$(dmidecode -s baseboard-product-name)
-	json[motherboard_sn]=$(dmidecode -s baseboard-serial-number)
+	json[system_manufacturer]=$(dmidecode -s system-manufacturer)
+ 	json[system_product_name]=$(dmidecode -s baseboard-product-name) 
+ 	json[system_version]=$(dmidecode -s system-version) 
+ 	json[system_sn]=$(dmidecode -s system-serial-number)
+ 	
+ 	json[baseboard_manufacturer]=$(dmidecode -s baseboard-manufacturer) 
+	json[baseboard_product_name]=$(dmidecode -s baseboard-product-name)
+ 	json[baseboard_version]=$(dmidecode -s baseboard-version)
+	json[baseboard_sn]=$(dmidecode -s baseboard-serial-number)
+ 	json[baseboard_asset_tag]=$(dmidecode -s baseboard-asset-tag)
+ 	
+ 	json[chassis_manufacturer]=$(dmidecode -s chassis-manufacturer)
+ 	json[chassis_type]=$(dmidecode -s chassis-type)
+ 	json[chassis_version]=$(dmidecode -s chassis-version)
+ 	json[chassis_sn]=$(dmidecode -s chassis-serial-number)
+ 	json[chassis_asset_tag]=$(dmidecode -s chassis-asset-tag)
 	
 	if which lsb_release &>/dev/null; then
 		json[os]=$(lsb_release -a | awk -F ":" '/Description:/{sub(/^[ \t]+/, "",$2);print $2}')
@@ -93,11 +109,10 @@ post_computer() {
 		eval $(cat /etc/os-release)
 		json[os]=$PRETTY_NAME
 	fi
-		
 	
 	declare -i computer_id=0
 	computer_id=$(post computers "$(array_to_json)"|awk -F. '/Location: \/computers\?computer_id=eq\./{print $NF;exit}')
-	log "Computer ID: $computer_id added" >&2
+	log "Computer ID: $computer_id added"
 	echo $computer_id
 }
 
@@ -147,24 +162,21 @@ post_drive() {
 
 		json[computer_id]=$computer_id
 		json[type]="Unknown"
-		if [[ -n $MODEL ]]; then json[model]=$MODEL; fi
-		if [[ -n $SIZE ]]; then
+		test -n "$MODEL" && json[model]=$MODEL
+		if [ -n $SIZE ]; then
 			json[size]=$SIZE
 			json[size_unit]=B;
 		else
 			log "failure to get disk size"
 		fi
 
-		if [ -z "$SERIAL" ]; then
-			SERIAL=$(hdparm -i /dev/$KNAME|awk '/SerialNo=/{match($0,/SerialNo=(.*)/,a);print a[1]}')
-		fi
-		if [ ! -z "$SERIAL" ]; then
-			json[sn]=$SERIAL
-		fi
-		if [[ $ROTA -eq 1 ]]; then
+		test -z "$SERIAL" && SERIAL=$(hdparm -i /dev/$KNAME|awk '/SerialNo=/{match($0,/SerialNo=(.*)/,a);print a[1]}')
+		test -n "$SERIAL" && json[sn]=$SERIAL
+		
+		if [ "$ROTA" = '1' ]; then
 			json[type]="HDD"
 		else
-			if [[ $TRAN == 'sata' ]]; then
+			if [ "$TRAN" = 'sata' ]; then
 				json[type]="SSD"
 			else
 				json[type]="Unknown"
