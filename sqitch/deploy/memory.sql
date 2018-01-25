@@ -16,11 +16,11 @@ CREATE TABLE memory (
     memory_id bigserial PRIMARY KEY,
     computer_id bigint NOT NULL REFERENCES computers,
     model text NULL,
-    speed bigint NOT NULL,
-    speed_unit transfer_units NOT NULL,
-    size bigint NOT NULL,
-    size_unit size_units NOT NULL,
-    type memory_types NOT NULL
+    speed bigint NULL,
+    speed_unit transfer_units NULL,
+    size bigint NULL,
+    size_unit size_units NULL,
+    type memory_types NULL
 );
 
 -- Read-Only user can select
