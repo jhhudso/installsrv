@@ -13,8 +13,8 @@ CREATE TYPE memory_types AS enum (
 );
 
 CREATE TABLE memory (
-    memory_id serial,
-    computer_id bigint REFERENCES computers,
+    memory_id bigserial PRIMARY KEY,
+    computer_id bigint NOT NULL REFERENCES computers,
     model text NULL,
     speed bigint NOT NULL,
     speed_unit transfer_units NOT NULL,
