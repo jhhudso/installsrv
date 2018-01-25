@@ -4,10 +4,15 @@ BEGIN;
 
 CREATE TABLE computers (    
     computer_id bigserial PRIMARY KEY,
-    baseboard_model text NOT NULL,    
-    baseboard_sn text NULL,
-    baseboard_product_name text NULL,
+    system_manufacturer text NULL,
+    system_product_name text NULL,
+    system_version text NULL,
+    system_sn text NULL,
     baseboard_manufacturer text NULL,
+    baseboard_product_name text NULL,
+    baseboard_version text NULL,
+    baseboard_sn text NULL,
+    baseboard_asset_tag text NULL,
     chassis_manufacturer text NULL,
     chassis_type text NULL,
     chassis_version text NULL,

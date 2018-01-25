@@ -2,11 +2,28 @@
 
 BEGIN;
 
-SELECT computer_id, baseboard_model, baseboard_sn, baseboard_product_name, baseboard_manufacturer,
-       chassis_manufacturer, chassis_type, chassis_version, chassis_sn, chassis_asset_tag,
-       os, barcode
-  FROM computers
- WHERE FALSE;
+SELECT
+    computer_id,
+    system_manufacturer,
+    system_product_name,
+    system_version,
+    system_sn,
+    baseboard_manufacturer,
+    baseboard_product_name,
+    baseboard_version,
+    baseboard_sn,
+    baseboard_asset_tag,
+    chassis_manufacturer,
+    chassis_type,
+    chassis_version,
+    chassis_sn,
+    chassis_asset_tag,
+    os,
+    barcode
+FROM
+    computers
+WHERE
+    FALSE;
 
 -- Read-Only user can only select from this table
 SELECT has_table_privilege('inventory_ro', 'computers', 'select');
