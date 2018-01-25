@@ -2,8 +2,8 @@
 
 BEGIN;
 
-REVOKE SELECT ON SEQUENCE drives_drive_id_seq TO inventory_ro;
-REVOKE USAGE ON SEQUENCE drives_drive_id_seq TO inventory_rw;
+REVOKE SELECT ON SEQUENCE drives_drive_id_seq FROM inventory_ro;
+REVOKE USAGE ON SEQUENCE drives_drive_id_seq FROM inventory_rw;
 
 DROP TABLE drives;
 
