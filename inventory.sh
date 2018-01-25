@@ -69,7 +69,8 @@ post() {
 	     			-d "$json" 2>/dev/null)
 	response=${response//$'\r'/}
 	log "Response:"
-	echo "$response" >&1 >&2
+	echo "$response" >&1
+	echo "$response" >&2
 }
 
 array_to_json() {
