@@ -6,6 +6,7 @@
 BEGIN;
 
 CREATE TYPE memory_types AS enum (
+    'Unknown',
     'DDR',
     'DDR2',
     'DDR3',
@@ -20,7 +21,13 @@ CREATE TABLE memory (
     speed_unit transfer_units NULL,
     size bigint NULL,
     size_unit size_units NULL,
-    type memory_types NULL
+    type memory_types NULL,   
+    form_factor text NULL,
+    locator text NULL,
+    manufacturer text NULL,
+    sn text NULL,
+    part_number text NULL,
+    rank text NULL 
 );
 
 -- Read-Only user can select
