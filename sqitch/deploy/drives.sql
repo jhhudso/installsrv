@@ -8,7 +8,8 @@ CREATE TYPE drive_types AS enum (
     'Unknown',
     'HDD',
     'SSD',
-    'NVME'
+    'NVME',
+    'ROM'
 );
 
 CREATE TABLE drives (
