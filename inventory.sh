@@ -159,34 +159,34 @@ post_drive() {
 	local -i computer_id=$1
 
 	IFS=$'\n'
-	for disk in $(lsblk -Pdibo KNAME,SIZE,ROTA,SERIAL,TRAN,MODEL); do
-		unset KNAME SIZE ROTA SERIAL TRAN MODEL
+	for disk in $(lsblk -Pdibo KNAME,SIZE,ROTA,SERIAL,TRAN,MODEL,TYPE); do
+		unset KNAME SIZE ROTA SERIAL TRAN MODEL TYPE
 		eval $disk
-		declare -A json=()
-
-		json[computer_id]=$computer_id
-		json[type]="Unknown"
-		test -n "$MODEL" && json[model]=$MODEL
+		declare -A json=( [computer_id]=$computer_id [type]=Unknown )
+		
 		if [ -n $SIZE ]; then
 			json[size]=$SIZE
 			json[size_unit]=B;
 		else
-			log "failure to get disk size"
+			log 'failure to get disk size'
 		fi
 
-		test -z "$SERIAL" && SERIAL=$(hdparm -i /dev/$KNAME|awk '/SerialNo=/{match($0,/SerialNo=(.*)/,a);print a[1]}')
-		test -n "$SERIAL" && json[sn]=$SERIAL
-		
-		if [ "$ROTA" = '1' ]; then
-			json[type]="HDD"
-		else
-			if [ "$TRAN" = 'sata' ]; then
-				json[type]="SSD"
+		test -z $SERIAL && SERIAL=$(hdparm -i /dev/$KNAME|awk '/SerialNo=/{match($0,/SerialNo=(.*)/,a);print a[1]}')
+		test -n $SERIAL && json[sn]=$SERIAL
+
+		if [ "$TYPE" = 'disk' ]; then
+			if [ "$ROTA" = '1' ]; then
+				json[type]=HDD
 			else
-				json[type]="Unknown"
+				if [ "$TRAN" = 'sata' ]; then
+					json[type]=SSD
+				fi
 			fi
+		elif [ "$TYPE" = 'rom' ]; then
+			json[type]=ROM
 		fi
-
+	
+		json[model]=$MODEL
 		#json[rpm]=$()
 	
 		post drives "$(array_to_json nonulls)" >/dev/null
@@ -199,43 +199,35 @@ post_memory() {
 	for handle in $(dmidecode --type 17|awk -F, '/Handle 0x/{match($1,/Handle (0x[0-9A-Z]*)/,a);print a[1]}'); do
 		declare -A json=()		
 		json[computer_id]=$computer_id
-		
-		json[model]=$(awk -F': ' -vtarget=$handle -f - <(dmidecode --type 17) <<'END'
-/Handle 0x[0-9A-F]*/ {match($0,/Handle (0x[0-9A-F]*)/,a); handle=a[1]}
-/Part Number/        {model=$2}
-/^$/                 {if (handle==target){print model; exit}}
+
+#TODO
+#    locator text NULL,
+#    manufacturer text NULL,
+#    sn text NULL,
+#    rank text NULL
+	
+		memory=$(awk -F': ' -vtarget=$handle -f - <(dmidecode --type 17) <<'END'
+/^Handle 0x[0-9A-F]*/        {match($0,/^Handle (0x[0-9A-F]*)/,a); handle=a[1]}
+/^[[:blank:]]*/ && (handle != target) {next}
+/^[[:blank:]]*Part Number:/ {match($0,/Part Number: (.*)/,a);printf("PART_NUMBER=\"%s\" ",a[1])}
+/^[[:blank:]]*Speed:/       {match($0,/Speed: ([0-9]*) ([a-zA-Z]*)[\w]*$/,a); printf("SPEED=\"%s\" SPEED_UNIT=\"%s\" ",a[1],a[2])}
+/^[[:blank:]]*Size:/        {match($0,/Size: ([0-9]*) ([a-zA-Z]*)[\w]*$/,a); printf("SIZE=\"%s\" SIZE_UNIT=\"%s\" ",a[1],a[2])}
+/^[[:blank:]]*Type:/        {match($0,/Type: ([0-9a-zA-Z]*)[\w]*$/,a); printf("TYPE=\"%s\" ",a[1])}
+/^[[:blank:]]*Form Factor:/ {match($0,/Form Factor: (.*)[\w]*$/,a); printf("FORM_FACTOR=\"%s\" ",a[1])}
+/^$/                        {printf("\n")}
 END
 )
-		json[speed]=$(awk -F': ' -vtarget=$handle -f - <(dmidecode --type 17) <<'END'
-/Handle 0x[0-9A-F]*/ {match($0,/Handle (0x[0-9A-F]*)/,a); handle=a[1]}
-/Speed/              {match($0,/Speed: ([0-9]*) /,a); speed=a[1]}
-/^$/                 {if (handle==target){print speed; exit}}
-END
-)
-		json[speed_unit]=$(awk -F': ' -vtarget=$handle -f - <(dmidecode --type 17) <<'END'
-/Handle 0x[0-9A-F]*/ {match($0,/Handle (0x[0-9A-F]*)/,a); handle=a[1]}
-/Speed/              {match($0,/Speed: ([0-9]*) ([a-zA-Z]*)/,a); speed_unit=a[2]}
-/^$/                 {if (handle==target){print speed_unit; exit}}
-END
-)
-		json[size]=$(awk -F': ' -vtarget=$handle -f - <(dmidecode --type 17) <<'END'
-/Handle 0x[0-9A-F]*/ {match($0,/Handle (0x[0-9A-F]*)/,a); handle=a[1]}
-/Size/               {match($0,/Size: ([0-9]*) ([a-zA-Z]*)/,a); size=a[1]}
-/^$/                 {if (handle==target){print size; exit}}
-END
-)
-		json[size_unit]=$(awk -F': ' -vtarget=$handle -f - <(dmidecode --type 17) <<'END'
-/Handle 0x[0-9A-F]*/ {match($0,/Handle (0x[0-9A-F]*)/,a); handle=a[1]}
-/Size/               {match($0,/Size: ([0-9]*) ([a-zA-Z]*)/,a); size_unit=a[2]}
-/^$/                 {if (handle==target){print size_unit; exit}}
-END
-)		
-		json[type]=$(awk -F': ' -vtarget=$handle -f - <(dmidecode --type 17) <<'END'
-/Handle 0x[0-9A-F]*/ {match($0,/Handle (0x[0-9A-F]*)/,a); handle=a[1]}
-/Type/               {match($0,/Type: ([0-9A-Z]*)/,a); type=a[1]}
-/^$/                 {if (handle==target){print type; exit}}
-END
-)		
+		unset PART_NUMBER SPEED SPEED_UNIT SIZE SIZE_UNIT TYPE FORM_FACTOR
+		eval $memory
+
+		json[part_number]=$PART_NUMBER
+		json[speed]=$SPEED
+		json[speed_unit]=$SPEED_UNIT
+		json[size]=$SIZE
+		json[size_unit]=$SIZE_UNIT
+		json[type]=$TYPE
+		json[form_factor]=$FORM_FACTOR
+
 		post memory "$(array_to_json nonulls)" >/dev/null
 	done
 }
