@@ -1,6 +1,7 @@
 <?php
 {
     include_once 'include/default.inc.php';
+    
     session_start();
     
     // If user is not already logged in then take them to login page
@@ -25,6 +26,13 @@
     if (!preg_match('/[A-Za-z0-9]/', $item_code)) {
         exit();
     }  
+
+    if (isset($default_print_queue)) {
+        if (isset($printconfig[$default_print_queue]['type'])) {
+            exec('./print_escpos.py');
+            exit();
+        }
+    }
     
     include_once 'include/barcode.inc.php';
     
@@ -87,7 +95,11 @@
     
     if ($print == 1) {
         $ret = imagepng($im, 'tmp/'.$item_code.'.png');
-        exec('lp -d remote-QL-570 tmp/'.$code.'.png');
+        if (isset($default_print_queue)) {
+            exec('lp -d '.$default_print_queue.' tmp/'.$code.'.png');
+        } else {
+            exec('lp -d remote-QL-570 tmp/'.$code.'.png');
+        }
     }
     exec('rm tmp/'.$item_code.'.png');
     imagedestroy($im);
