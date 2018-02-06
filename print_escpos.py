@@ -29,7 +29,8 @@ jsonStr = """
 
 j = json.loads(jsonStr)
 
-p = printer.Network("192.168.1.172", 4242)
+p = printer.File('/dev/usb/lp0')
+#p = printer.Network("192.168.1.172", 4242)
 p.set('center')
 p.image("fgarlogo.png", False, False, "bitImageRaster", 960)
 
