@@ -21,6 +21,8 @@
     ini_set("session.sid_length", "48"); 
     ini_set("session.sid_bits_per_character", "6"); 
     ini_set("session.hash_function", "sha256"); 
+    
+    include_once 'include/config.inc.php';
 }
 
 function showError($msg) {
