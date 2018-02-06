@@ -261,7 +261,7 @@ function findCategories() {
     <form id=addform method="post" enctype="application/x-www-form-urlencoded" action="main.php?tool=additem">
         Name:      <input type="text" size="25" id="namebox"        name="name"      placeholder="Full name of item"          autocomplete="off" required value="<?php echo $item_name; ?>"      /><?php showError($item_name_error); ?>
         Reference: <input type="text" size="25" id="referencebox"   name="reference" placeholder="Model or reference keyword" autocomplete="off" required value="<?php echo $item_reference; ?>" /><?php showError($item_reference_error); ?>
-   <div>Price:     <input type="text" size="25" id="pricesellbox"   name="pricesell" placeholder="Sell price"                 autocomplete="off" required value="<?php echo $item_pricesell; ?>" /><?php showError($item_pricesell_error); ?>
+        Price:     <input type="text" size="25" id="pricesellbox"   name="pricesell" placeholder="Sell price"                 autocomplete="off" required value="<?php echo $item_pricesell; ?>" /><?php showError($item_pricesell_error); ?>
     	Category:  <select                      id="categoryselect" name="category"></select>
     	<div align="right" style="float: right;"><button id=addbutton onclick="additem(false); return false;" type="submit" name="submit" value="add" class="btn btn-primary btn-large">Add item</button>
     	                   <button id=addbutton onclick="additem(true);  return false;" type="submit" name="submit" value="add" class="btn btn-primary btn-large">Add item &amp; Print Barcode</button>
