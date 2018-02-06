@@ -46,9 +46,7 @@
     } else {
         $fullresults = 0;
     }
-    
-    include_once 'include/config.inc.php';
-    
+       
     try {
         $posdb = new PDO($dbconfig['pos']['dsn'], $dbconfig['pos']['username'], $dbconfig['pos']['password'], $dbconfig['pos']['options']);
     } catch(PDOException $e) {
