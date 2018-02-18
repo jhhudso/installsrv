@@ -200,24 +200,22 @@ post_memory() {
 		declare -A json=()		
 		json[computer_id]=$computer_id
 
-#TODO
-#    locator text NULL,
-#    manufacturer text NULL,
-#    sn text NULL,
-#    rank text NULL
-	
 		memory=$(awk -F': ' -vtarget=$handle -f - <(dmidecode --type 17) <<'END'
 /^Handle 0x[0-9A-F]*/        {match($0,/^Handle (0x[0-9A-F]*)/,a); handle=a[1]}
 /^[[:blank:]]*/ && (handle != target) {next}
-/^[[:blank:]]*Part Number:/ {match($0,/Part Number: (.*)/,a);printf("PART_NUMBER=\"%s\" ",a[1])}
-/^[[:blank:]]*Speed:/       {match($0,/Speed: ([0-9]*) ([a-zA-Z]*)[\w]*$/,a); printf("SPEED=\"%s\" SPEED_UNIT=\"%s\" ",a[1],a[2])}
-/^[[:blank:]]*Size:/        {match($0,/Size: ([0-9]*) ([a-zA-Z]*)[\w]*$/,a); printf("SIZE=\"%s\" SIZE_UNIT=\"%s\" ",a[1],a[2])}
-/^[[:blank:]]*Type:/        {match($0,/Type: ([0-9a-zA-Z]*)[\w]*$/,a); printf("TYPE=\"%s\" ",a[1])}
-/^[[:blank:]]*Form Factor:/ {match($0,/Form Factor: (.*)[\w]*$/,a); printf("FORM_FACTOR=\"%s\" ",a[1])}
-/^$/                        {printf("\n")}
+/^[[:blank:]]*Part Number:/   {match($0,/Part Number: (.*)/,a);printf("PART_NUMBER=\"%s\" ",a[1])}
+/^[[:blank:]]*Speed:/         {match($0,/Speed: ([0-9]*) ([a-zA-Z]*)[\w]*$/,a); printf("SPEED=\"%s\" SPEED_UNIT=\"%s\" ",a[1],a[2])}
+/^[[:blank:]]*Size:/          {match($0,/Size: ([0-9]*) ([a-zA-Z]*)[\w]*$/,a); printf("SIZE=\"%s\" SIZE_UNIT=\"%s\" ",a[1],a[2])}
+/^[[:blank:]]*Type:/          {match($0,/Type: ([0-9a-zA-Z]*)[\w]*$/,a); printf("TYPE=\"%s\" ",a[1])}
+/^[[:blank:]]*Form Factor:/   {match($0,/Form Factor: (.*)[\w]*$/,a); printf("FORM_FACTOR=\"%s\" ",a[1])}
+/^[[:blank:]]*Serial Number:/ {match($0,/Serial Number: (.*)[\w]*$/,a); if (a[1] !~ /^0*$/ && a[1] !~ /NO DIMM/ && a[1] !~ /Unknown/ && a[1] !~ /Empty/ && a[1] !~ /Not Specified/) {printf("SN=\"%s\" \n",a[1])}}
+/^[[:blank:]]*Locator:/       {match($0,/Locator: (.*)[\w]*$/,a); printf("LOCATOR=\"%s\" ",a[1])}
+/^[[:blank:]]*Rank:/          {match($0,/Rank: (.*)[\w]*$/,a); printf("RANK=\"%s\" ",a[1])}
+/^[[:blank:]]*Manufacturer:/  {match($0,/Manufacturer: (.*)[\w]*$/,a); printf("MANUFACTURER=\"%s\" ",a[1])}
+/^$/                          {printf("\n")}
 END
 )
-		unset PART_NUMBER SPEED SPEED_UNIT SIZE SIZE_UNIT TYPE FORM_FACTOR
+		unset PART_NUMBER SPEED SPEED_UNIT SIZE SIZE_UNIT TYPE FORM_FACTOR SN LOCATOR RANK MANUFACTURER
 		eval $memory
 
 		json[part_number]=$PART_NUMBER
@@ -227,6 +225,10 @@ END
 		json[size_unit]=$SIZE_UNIT
 		json[type]=$TYPE
 		json[form_factor]=$FORM_FACTOR
+		json[sn]=$SN
+		json[locator]=$LOCATOR
+		json[rank]=$RANK
+		json[manufacturer]=$MANUFACTURER
 
 		post memory "$(array_to_json nonulls)" >/dev/null
 	done
