@@ -28,7 +28,7 @@
     }  
 
     if (isset($default_print_queue)) {
-        if (isset($printconfig[$default_print_queue]['type'])) {
+        if (isset($printconfig[$default_print_queue]['type']) && $printconfig[$default_print_queue]['type'] == 'escpos') {
             exec('./print_escpos.py');
             exit();
         }
@@ -73,11 +73,12 @@
     // -------------------------------------------------- //
     //                        HRI
     // -------------------------------------------------- //
+   
     if ( isset($font) ){
-        $box = imagettfbbox($fontSize, 0, $font, $data['hri']);
+        $box = imagettfbbox($fontSize, 0, $font, $code[0].$data['hri']);
         $len = $box[2] - $box[0];
         Barcode::rotate(-$len / 2, ($data['height'] / 2) + $fontSize + $marge, $angle, $xt, $yt);
-        imagettftext($im, $fontSize, $angle, $x + $xt, $y + $yt, $black, $font, $data['hri']);
+        imagettftext($im, $fontSize, $angle, $x + $xt, $y + $yt, $black, $font, $code[0].$data['hri']);
         
         $box2 = imagettfbbox($fontSize, 0, $font, $item_name.'     $'.$item_pricesell);
         $len = $box2[2] - $box2[0];
