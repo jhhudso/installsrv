@@ -68,7 +68,12 @@
     // -------------------------------------------------- //
     //                      BARCODE
     // -------------------------------------------------- //
-    $data = Barcode::gd($im, $black, $x, $y, $angle, $type, array('code'=>$code), $width, $height);
+    if (strlen($code) == 12) {
+        $printcode = substr($code,0,-1);
+    } else {
+        $printcode = $code;
+    }
+    $data = Barcode::gd($im, $black, $x, $y, $angle, $type, array('code'=>$printcode), $width, $height);
     
     // -------------------------------------------------- //
     //                        HRI
