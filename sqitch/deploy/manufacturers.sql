@@ -4,7 +4,7 @@ BEGIN;
 
 CREATE TABLE manufacturers (
     manufacturer_id serial PRIMARY KEY,
-    name text
+    name text UNIQUE NOT NULL
 );
 
 -- Read-Only user can select

@@ -2,6 +2,7 @@
 
 BEGIN;
 
+DROP VIEW v_computers;
 DROP TABLE computers;
 
 COMMIT;
