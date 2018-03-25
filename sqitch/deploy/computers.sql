@@ -42,10 +42,10 @@ CREATE VIEW v_computers AS
     c.barcode
    FROM computers c;
 
-CREATE rule insert_v_computers AS ON INSERT TO v_computers DO INSTEAD (
-    insert into manufacturers (name) values (NEW.system_manufacturer) on conflict do nothing;
-    insert into manufacturers (name) values (NEW.baseboard_manufacturer) on conflict do nothing;
-    insert into manufacturers (name) values (NEW.chassis_manufacturer) on conflict do nothing;
+CREATE OR REPLACE rule insert_v_computers as ON INSERT TO v_computers DO INSTEAD (
+    select add_manufacturer(NEW.system_manufacturer);
+    select add_manufacturer(NEW.baseboard_manufacturer);
+    select add_manufacturer(NEW.chassis_manufacturer);
     insert into computers (system_manufacturer,
                             system_product_name,
                             system_version,
@@ -81,12 +81,12 @@ CREATE rule insert_v_computers AS ON INSERT TO v_computers DO INSTEAD (
     )
 );
 
-CREATE rule update_v_computers AS ON UPDATE TO v_computers DO INSTEAD (
+CREATE or replace rule update_v_computers AS ON UPDATE TO v_computers DO INSTEAD (
     insert into manufacturers(name) values (NEW.system_manufacturer) on conflict do nothing;
     insert into manufacturers(name) values (NEW.baseboard_manufacturer) on conflict do nothing;
     insert into manufacturers(name) values (NEW.chassis_manufacturer) on conflict do nothing;
     update computers SET system_manufacturer = COALESCE((SELECT manufacturer_id FROM manufacturers WHERE NEW.system_manufacturer = name), system_manufacturer),
-    					 system_version = COALESCE(NEW.system_version, OLD.system_version),
+                         system_version = COALESCE(NEW.system_version, OLD.system_version),
                          system_sn = COALESCE(NEW.system_sn, OLD.system_sn),
                          baseboard_manufacturer = COALESCE((SELECT manufacturer_id FROM manufacturers WHERE NEW.baseboard_manufacturer = name), baseboard_manufacturer),
                          baseboard_product_name = COALESCE(NEW.baseboard_product_name, OLD.baseboard_product_name),
@@ -100,22 +100,22 @@ CREATE rule update_v_computers AS ON UPDATE TO v_computers DO INSTEAD (
                          chassis_asset_tag = COALESCE(NEW.chassis_asset_tag, OLD.chassis_asset_tag),
                          os = COALESCE(NEW.os, OLD.os),
                          barcode = COALESCE(NEW.barcode, barcode)
-	WHERE computer_id = OLD.computer_id AND
-		  (OLD.system_manufacturer <> NEW.system_manufacturer OR
-		   OLD.system_version <> NEW.system_version OR
-		   OLD.system_sn <> NEW.system_sn OR
-		   OLD.baseboard_manufacturer <> NEW.baseboard_manufacturer OR
-		   OLD.baseboard_product_name <> NEW.baseboard_product_name OR
-		   OLD.baseboard_version <> NEW.baseboard_version OR
-		   OLD.baseboard_asset_tag <> NEW.baseboard_asset_tag OR
-		   OLD.chassis_manufacturer <> NEW.chassis_manufacturer OR
-		   OLD.chassis_type <> NEW.chassis_type OR
-		   OLD.chassis_version <> NEW.chassis_version OR
-		   OLD.chassis_sn <> NEW.chassis_sn OR
-		   OLD.chassis_asset_tag <> NEW.chassis_asset_tag OR
-		   OLD.os <> NEW.os OR
-		   OLD.barcode <> NEW.barcode)
-		   
+    WHERE computer_id = OLD.computer_id AND
+          (OLD.system_manufacturer <> NEW.system_manufacturer OR
+           OLD.system_version <> NEW.system_version OR
+           OLD.system_sn <> NEW.system_sn OR
+           OLD.baseboard_manufacturer <> NEW.baseboard_manufacturer OR
+           OLD.baseboard_product_name <> NEW.baseboard_product_name OR
+           OLD.baseboard_version <> NEW.baseboard_version OR
+           OLD.baseboard_asset_tag <> NEW.baseboard_asset_tag OR
+           OLD.chassis_manufacturer <> NEW.chassis_manufacturer OR
+           OLD.chassis_type <> NEW.chassis_type OR
+           OLD.chassis_version <> NEW.chassis_version OR
+           OLD.chassis_sn <> NEW.chassis_sn OR
+           OLD.chassis_asset_tag <> NEW.chassis_asset_tag OR
+           OLD.os <> NEW.os OR
+           OLD.barcode <> NEW.barcode)
+           
 );
 
 CREATE OR REPLACE FUNCTION delete_computers(id bigint) RETURNS void AS $$
@@ -135,7 +135,7 @@ BEGIN
      WHERE manufacturer_id = old_c.system_manufacturer OR
            manufacturer_id = old_c.baseboard_manufacturer OR
            manufacturer_id = old_c.chassis_manufacturer;
-EXCEPTION
+    EXCEPTION
         WHEN foreign_key_violation THEN --
 END;
 
@@ -143,7 +143,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE RULE delete_v_computers AS ON DELETE TO v_computers
-	DO INSTEAD (SELECT delete_computers(OLD.computer_id));
+    DO INSTEAD (SELECT delete_computers(OLD.computer_id));
 
 -- Read-Only user can select
 GRANT SELECT ON computers TO inventory_ro;
