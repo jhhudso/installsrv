@@ -143,7 +143,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE RULE delete_v_computers AS ON DELETE TO v_computers
-	DO INSTEAD (PERFORM delete_computers(OLD.computer_id));
+	DO INSTEAD (SELECT delete_computers(OLD.computer_id));
 
 -- Read-Only user can select
 GRANT SELECT ON computers TO inventory_ro;
