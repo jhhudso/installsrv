@@ -109,7 +109,7 @@ post_computer() {
 	
 	if which lsb_release &>/dev/null; then
 		json[os]=$(lsb_release -a | awk -F ":" '/Description:/{sub(/^[ \t]+/, "",$2);print $2}')
-	elif -f /etc/os-release; then
+	elif [ -f /etc/os-release ]; then
 		eval $(cat /etc/os-release)
 		json[os]=$PRETTY_NAME
 	fi
