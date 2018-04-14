@@ -15,7 +15,7 @@ CREATE TYPE drive_types AS enum (
 CREATE TABLE drives (
     drive_id bigserial PRIMARY KEY,
     computer_id bigint NOT NULL REFERENCES computers,
-    model text NOT NULL,
+    model text NULL,
     size bigint NOT NULL,
     size_unit size_units NOT NULL,
     type drive_types NOT NULL,
