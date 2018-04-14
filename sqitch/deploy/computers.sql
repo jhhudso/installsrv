@@ -163,10 +163,12 @@ CREATE OR REPLACE RULE delete_v_computers AS ON DELETE TO v_computers
 
 -- Read-Only user can select
 GRANT SELECT ON computers TO inventory_ro;
+GRANT SELECT ON v_computers TO inventory_ro;
 GRANT SELECT ON SEQUENCE computers_computer_id_seq TO inventory_ro;
 
 -- Read-Write user can insert/update/delete and manipulate the sequence
 GRANT SELECT,INSERT,UPDATE,DELETE ON computers TO inventory_rw;
+GRANT SELECT,INSERT,UPDATE,DELETE ON v_computers TO inventory_rw;
 GRANT USAGE ON SEQUENCE computers_computer_id_seq TO inventory_rw;
 
 COMMIT;
