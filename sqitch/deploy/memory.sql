@@ -6,6 +6,7 @@
 BEGIN;
 
 CREATE TYPE memory_types AS enum (
+    'RAM',
     'Unknown',
     'DDR',
     'DDR2',
