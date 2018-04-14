@@ -79,6 +79,23 @@ CREATE OR REPLACE rule insert_v_computers as ON INSERT TO v_computers DO INSTEAD
         NEW.os,
         NEW.barcode      
     )
+    RETURNING computers.computer_id,
+    	      (SELECT name AS system_manufacturer FROM manufacturers WHERE manufacturer_id = computers.system_manufacturer),
+	      computers.system_product_name,
+	      computers.system_version,
+              computers.system_sn,
+	      (SELECT name AS baseboard_manufacturer FROM manufacturers WHERE manufacturer_id = computers.baseboard_manufacturer),
+   	      computers.baseboard_product_name,
+              computers.baseboard_version,
+              computers.baseboard_sn,
+              computers.baseboard_asset_tag,
+	      (SELECT name AS chassis_manufacturer FROM manufacturers WHERE manufacturer_id = computers.chassis_manufacturer),
+	      computers.chassis_type,
+              computers.chassis_version,
+              computers.chassis_sn,
+              computers.chassis_asset_tag,
+              computers.os,
+              computers.barcode;
 );
 
 CREATE or replace rule update_v_computers AS ON UPDATE TO v_computers DO INSTEAD (
@@ -115,7 +132,6 @@ CREATE or replace rule update_v_computers AS ON UPDATE TO v_computers DO INSTEAD
            OLD.chassis_asset_tag <> NEW.chassis_asset_tag OR
            OLD.os <> NEW.os OR
            OLD.barcode <> NEW.barcode)
-           
 );
 
 CREATE OR REPLACE FUNCTION delete_computers(id bigint) RETURNS void AS $$
