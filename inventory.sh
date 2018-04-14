@@ -53,6 +53,25 @@ log() {
 	printf "%s %s\n" "$(date -Iseconds)" "$1" >&2
 }
 
+get() {
+	if [ -z "$1" -o -z "$2" ]; then		
+		log 'Error in get function. Use post <table> <query>'
+		return 1
+	else
+		local table=$1
+		local query=$2
+	fi
+	
+	log "GETing from $postgrest_url/$table where $query"
+	response=$(curl -i $postgrest_url/$table?$query -X GET \
+	        	    -H "Authorization: Bearer $postgrest_token" \
+	     			-H 'Content-Type: application/json' 2>/dev/null)
+	response=${response//$'\r'/}
+	log "Response:"
+	echo "$response" >&1
+	echo "$response" >&2
+}
+
 post() {
 	if [ -z "$1" -o -z "$2" ]; then		
 		log 'Error in post function. Use post <table> <json to post>'
@@ -88,20 +107,49 @@ array_to_json() {
 	printf '}\n'
 }
 
+post_manufacturer() {
+    if [ -z "$1" ]; then
+	return 1;
+    fi
+
+    declare -A json=()
+    declare -i manufacturer_id=0
+    json[name]=$1
+    manufacturer_id=$(post manufacturers "$(array_to_json nonulls)"|awk -F. '/Location: \/manufacturers\?manufacturer_id=eq\./{print $NF;exit}')
+
+    if [ $manufacturer_id -eq 0 ]; then
+	str=$(get manufacturers select=manufacturer_id\&name=eq.$1)
+	if [[ "$str" =~ \[\{\"manufacturer_id\":([0-9]+)\}\] ]]; then
+	    manufacturer_id=${BASH_REMATCH[1]}
+	fi
+    fi
+
+    log "Manufacuturer ID: $manufacturer_id added"
+    printf "%d\n" "$manufacturer_id"
+
+    return 0;
+}
+
 post_computer() {
-	declare -A json=()
-	json[system_manufacturer]=$(dmidecode -s system-manufacturer)
+        system_manufacturer=$(post_manufacturer $(dmidecode -s system-manufacturer))
+        baseboard_manufacturer=$(post_manufacturer $(dmidecode -s baseboard-manufacturer))
+        chassis_manufacturer=$(post_manufacturer $(dmidecode -s chassis-manufacturer))
+
+        local -A json=()
+
+	json[chassis_manufacturer]=$chassis_manufacturer
+ 	json[baseboard_manufacturer]=$baseboard_manufacturer
+	json[system_manufacturer]=$system_manufacturer
+
  	json[system_product_name]=$(dmidecode -s baseboard-product-name) 
  	json[system_version]=$(dmidecode -s system-version) 
  	json[system_sn]=$(dmidecode -s system-serial-number)
  	
- 	json[baseboard_manufacturer]=$(dmidecode -s baseboard-manufacturer) 
 	json[baseboard_product_name]=$(dmidecode -s baseboard-product-name)
  	json[baseboard_version]=$(dmidecode -s baseboard-version)
 	json[baseboard_sn]=$(dmidecode -s baseboard-serial-number)
  	json[baseboard_asset_tag]=$(dmidecode -s baseboard-asset-tag)
  	
- 	json[chassis_manufacturer]=$(dmidecode -s chassis-manufacturer)
  	json[chassis_type]=$(dmidecode -s chassis-type)
  	json[chassis_version]=$(dmidecode -s chassis-version)
  	json[chassis_sn]=$(dmidecode -s chassis-serial-number)
@@ -234,6 +282,22 @@ END
 	done
 }
 
+post_host() {
+    if [ -z "$1" ]; then
+	return 1;
+    fi
+
+    declare -A json=()
+    json[computer_id]=$1
+    json[fqdn]=$(hostname -f)
+    json[hostname]=$(hostname)
+    json[ip]=$(ip a|grep inet|grep global|awk '{print $2}')
+
+    post hosts "$(array_to_json nonulls)"|awk -F. '/Location: \/hosts\?hosts_id=eq\./{print $NF;exit}'
+
+    return 0;
+}
+
 parse_options "$@"
 
 umask 027
@@ -265,6 +329,7 @@ setup_logging
 		post_cpu $computer_id
 		post_drive $computer_id
 		post_memory $computer_id
+		post_host $computer_id
 	else
 		log "Error adding computer"
 		exit 1
