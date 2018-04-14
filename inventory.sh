@@ -291,7 +291,7 @@ post_host() {
     json[computer_id]=$1
     json[fqdn]=$(hostname -f)
     json[hostname]=$(hostname)
-    json[ip]=$(ip a|grep inet|grep global|awk '{print $2}')
+    json[ip]=$(ip a|grep inet|grep global|awk '{print $2;exit}')
 
     post hosts "$(array_to_json nonulls)"|awk -F. '/Location: \/hosts\?hosts_id=eq\./{print $NF;exit}'
 
