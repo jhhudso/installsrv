@@ -83,9 +83,10 @@ post() {
 	
 	log "Posting to $postgrest_url/$table with $json"
 	response=$(curl -i $postgrest_url/$table -X POST \
-	        	    -H "Authorization: Bearer $postgrest_token" \
-	     			-H 'Content-Type: application/json' \
-	     			-d "$json" 2>/dev/null)
+-H "Authorization: Bearer $postgrest_token" \
+-H 'Content-Type: application/json' \
+-H 'Prefer: return=headers-only' \
+-d "$json" 2>/dev/null)
 	response=${response//$'\r'/}
 	log "Response:"
 	echo "$response" >&1
@@ -321,7 +322,7 @@ setup_logging
 	fi
 	
 	# set default server in case config file does not define it		
-    postgrest_url=${postgrest_url:-http://installsrv.at.freegeekarkansas.org:3000}
+    postgrest_url=${postgrest_url:-http://installsrv.at.freegeekarkansas.org:3001}
 	
 	declare -i computer_id=0
 	computer_id=$(post_computer)
