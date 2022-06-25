@@ -1,4 +1,4 @@
--- Deploy meatPacker:computers to pg
+-- Deploy compinvent:computers to pg
 
 BEGIN;
 

@@ -1,4 +1,4 @@
--- Deploy meatPacker:drives to pg
+-- Deploy compinvent:drives to pg
 -- requires: size_units
 -- requires: computers
 

@@ -1,4 +1,4 @@
--- Verify meatPacker:transfer_units on pg
+-- Verify compinvent:transfer_units on pg
 
 BEGIN;
 

@@ -1,4 +1,4 @@
--- Deploy meatPacker:manufacturers to pg
+-- Deploy compinvent:manufacturers to pg
 
 BEGIN;
 

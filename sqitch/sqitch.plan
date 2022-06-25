@@ -1,5 +1,5 @@
 %syntax-version=1.0.0
-%project=meatPacker
+%project=compinvent
 
 size_units 2018-01-14T05:28:00Z Zac Slade,,, <krakrjak@zombiebits> # Add unit type enum for byte sizes
 transfer_units 2018-01-14T05:32:13Z Zac Slade,,, <krakrjak@zombiebits> # Add Hz units to schema

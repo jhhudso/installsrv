@@ -1,4 +1,4 @@
--- Revert meatPacker:cycle_units from pg
+-- Revert compinvent:cycle_units from pg
 
 BEGIN;
 

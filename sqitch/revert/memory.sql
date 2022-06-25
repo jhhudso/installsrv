@@ -1,4 +1,4 @@
--- Revert meatPacker:memory from pg
+-- Revert compinvent:memory from pg
 
 BEGIN;
 

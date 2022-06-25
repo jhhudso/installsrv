@@ -1,4 +1,4 @@
--- Verify meatPacker:size_units on pg
+-- Verify compinvent:size_units on pg
  BEGIN;
 
 -- Does our enum exist?

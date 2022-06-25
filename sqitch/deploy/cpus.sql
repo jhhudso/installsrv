@@ -1,4 +1,4 @@
--- Deploy meatPacker:cpus to pg
+-- Deploy compinvent:cpus to pg
 -- requires: cycle_units
 -- requires: computers
 

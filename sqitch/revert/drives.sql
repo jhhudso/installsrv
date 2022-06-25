@@ -1,4 +1,4 @@
--- Revert meatPacker:drives from pg
+-- Revert compinvent:drives from pg
 
 BEGIN;
 

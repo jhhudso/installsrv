@@ -1,4 +1,4 @@
--- Deploy meatPacker:size_units to pg
+-- Deploy compinvent:size_units to pg
 
 BEGIN;
 

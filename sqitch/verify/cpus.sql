@@ -1,4 +1,4 @@
--- Verify meatPacker:cpus on pg
+-- Verify compinvent:cpus on pg
 
 BEGIN;
 

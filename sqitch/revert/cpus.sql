@@ -1,4 +1,4 @@
--- Revert meatPacker:cpus from pg
+-- Revert compinvent:cpus from pg
 
 BEGIN;
 

@@ -1,4 +1,4 @@
--- Verify meatPacker:memory on pg
+-- Verify compinvent:memory on pg
 
 BEGIN;
 

@@ -1,4 +1,4 @@
--- Deploy meatPacker:memory to pg
+-- Deploy compinvent:memory to pg
 -- requires: size_units
 -- requires: transfer_units
 -- requires: computers

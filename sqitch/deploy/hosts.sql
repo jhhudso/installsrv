@@ -1,4 +1,4 @@
--- Deploy meatPacker:hosts to pg
+-- Deploy compinvent:hosts to pg
 
 BEGIN;
 

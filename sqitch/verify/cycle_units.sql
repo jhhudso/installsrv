@@ -1,4 +1,4 @@
--- Verify meatPacker:cycle_units on pg
+-- Verify compinvent:cycle_units on pg
 
 BEGIN;
 

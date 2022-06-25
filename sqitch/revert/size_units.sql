@@ -1,4 +1,4 @@
--- Revert meatPacker:size_units from pg
+-- Revert compinvent:size_units from pg
 
 BEGIN;
 

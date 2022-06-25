@@ -1,4 +1,4 @@
--- Revert meatPacker:computers from pg
+-- Revert compinvent:computers from pg
 
 BEGIN;
 

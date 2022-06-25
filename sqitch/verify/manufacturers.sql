@@ -1,4 +1,4 @@
--- Verify meatPacker:manufacturers on pg
+-- Verify compinvent:manufacturers on pg
 
 BEGIN;
 

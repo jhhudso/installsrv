@@ -1,4 +1,4 @@
--- Revert meatPacker:hosts from pg
+-- Revert compinvent:hosts from pg
 
 BEGIN;
 

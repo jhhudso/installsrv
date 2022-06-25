@@ -1,4 +1,4 @@
--- Verify meatPacker:hosts on pg
+-- Verify compinvent:hosts on pg
 
 BEGIN;
 

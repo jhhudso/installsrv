@@ -1,4 +1,4 @@
--- Deploy meatPacker:cycle_units to pg
+-- Deploy compinvent:cycle_units to pg
 
 BEGIN;
 

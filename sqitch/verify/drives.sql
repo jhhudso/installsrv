@@ -1,4 +1,4 @@
--- Verify meatPacker:drives on pg
+-- Verify compinvent:drives on pg
 
 BEGIN;
 

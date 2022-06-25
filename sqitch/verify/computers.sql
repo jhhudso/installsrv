@@ -1,4 +1,4 @@
--- Verify meatPacker:computers on pg
+-- Verify compinvent:computers on pg
 
 BEGIN;
 

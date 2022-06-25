@@ -1,4 +1,4 @@
--- Revert meatPacker:manufacturers from pg
+-- Revert compinvent:manufacturers from pg
 
 BEGIN;
 
